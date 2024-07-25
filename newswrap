@@ -1,0 +1,16 @@
+#!/bin/sh
+
+! command -v newsboat >/dev/null 2>&1 && \
+    notify-send -i "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/critical.png" \
+    "Error" "Executable \`newsboat\` not found." && \
+    exit 127
+
+if pgrep -x newsboat >/dev/null 2>&1; then
+        notify-send -i "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/info.png" \
+            "Newsboat" \
+            "The news feed is currently refreshing. Try again in a moment."
+        exit 1
+fi
+
+newsboat
+echo "mb-news" > "$MODBAR_PIPE_PATH"

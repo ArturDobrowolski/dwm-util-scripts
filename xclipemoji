@@ -1,0 +1,19 @@
+#!/bin/sh
+
+[ ! -f "$XDG_DATA_HOME/emoji-list" ] && \
+    notify-send -i "$XDG_CONFIG_HOME/dunst/critical.png" \
+    "Error" "File \`emoji-list\` not found." && \
+    exit 1
+
+for i in dmenu cat sed awk; do
+        ! command -v $i > /dev/null && \
+            notify-send -i "$XDG_CONFIG_HOME/dunst/critical.png" \
+            "Error" "executable \`$i\` not found." && \
+            exit 127
+done
+
+emoji="$(cat $XDG_DATA_HOME/emoji-list | \
+        dmenu -i -l 25 -p "Choose emoji to copy: " | \
+        awk '{print $1}')"
+
+printf "%s" "$emoji" | xclip -selection clipboard

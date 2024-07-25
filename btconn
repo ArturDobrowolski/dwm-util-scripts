@@ -1,0 +1,25 @@
+#!/bin/sh
+
+for i in dmenu awk fd bluetoothctl; do
+        ! command -v $i >/dev/null 2>&1 && \
+            notify-send -i \
+            "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/critical.png" \
+            "Error" "Executable \`$i\` not found." && \
+            exit 127
+done
+
+count=$(ls -1 $XDG_DATA_HOME/bluetooth-devices | wc -l)
+device=$(fd . $XDG_DATA_HOME/bluetooth-devices | \
+    awk -F / '{print $NF}' | \
+    dmenu -i -l $count -p "Choose device: ")
+
+[ -z "$device" ] && exit 0
+mac=$(cat "$BLUETOOTH_DEVICE_DIR/$device")
+
+if [ ! -z $mac ]; then
+        echo "power on" | bluetoothctl >/dev/null 2>&1
+        sleep 3
+        echo "connect $mac" | bluetoothctl >/dev/null 2>&1
+        sleep 3
+        echo "mb-volume" > "$MODBAR_PIPE_PATH"
+fi

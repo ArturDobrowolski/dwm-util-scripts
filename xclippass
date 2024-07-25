@@ -1,0 +1,58 @@
+#!/bin/sh
+
+[ -z "$PASSWORD_STORE_DIR" ] && \
+    notify-send -i "$XDG_CONFIG_HOME/dunst/critical.png" \
+    "Error" "Variable PASSWORD_STORE_DIR not set." && \
+    exit 0
+
+for i in dmenu fd pass; do
+        ! command -v $i > /dev/null && \
+            notify-send -i "$XDG_CONFIG_HOME/dunst/critical.png" \
+            "Error" "executable \`$i\` not found." && \
+            exit 127
+done
+
+entry="$(fd . "$PASSWORD_STORE_DIR" | grep '.*.gpg$' | \
+    sed 's/.*password-store\///' | \
+    dmenu -i -c -l 15 -p "Choose entry:")"
+
+[ -z $entry ] && exit 1
+pass_entry=$(echo $entry | sed -e 's/.gpg$//')
+is_card=$(echo $entry | grep -c "credit-card")
+
+if [ $is_card -ne 0 ]; then
+        field="$(echo "Card number\nValid until\nCVV\n" | \
+            dmenu -p "Copy which field?" -l 3)"
+
+        case $field in
+        "Card number")
+                content="$(pass show "$pass_entry" -c1 &)"
+                ;;
+        "Valid until")
+                content="$(pass show "$pass_entry" -c2 &)"
+                ;;
+        "CVV")
+                content="$(pass show "$pass_entry" -c3 &)"
+                ;;
+        *)
+                exit 0
+                ;;
+        esac
+
+else
+        field="$(echo "Password\nUsername\n" | \
+            dmenu -p "Copy which field?" -l 2)"
+
+        case $field in
+        "Password" )
+                content="$(pass show "$pass_entry" -c1 &)"
+                ;;
+        "Username" )
+                content="$(pass show "$pass_entry" -c2 &)"
+                ;;
+        *)
+                exit 0
+                ;;
+        esac
+fi
+}

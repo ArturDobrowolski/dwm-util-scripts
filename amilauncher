@@ -1,0 +1,24 @@
+#!/bin/sh
+
+for i in dmenu sed fd fs-uae; do
+! command -v $i >/dev/null 2>&1 && \
+    notify-send -i "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/critical.png" \
+    "Error" "Executable \`$i\` not found." && \
+    exit 127
+done
+
+conf=$(fd . -i --relative-path "$HOME/FS-UAE/Configurations" -e "fs-uae" | \
+    sed -e 's|^.*Configurations/||' -e 's|\.fs-uae$||' | \
+    dmenu -i -l 15 -p "Select configuration to run: ")
+
+[ -z "$conf" ] && exit 0
+
+path="$HOME/FS-UAE/Configurations/$conf.fs-uae"
+if [ -f $path ]; then
+        notify-send -i "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/info.png" \
+        "FS-UAE" "Launching emulator with \"$conf\" configuration."
+        /bin/sh -c "fs-uae $path"
+else
+        notify-send -i "${XDG_CONFIG_HOME:-$HOME/.config}/dunst/warning.png" \
+        "Warning" "Configuration \"$conf\" does not exist."
+fi

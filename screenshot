@@ -1,0 +1,30 @@
+#!/bin/sh
+
+[ -z "$SCREENSHOT_DIRECTORY" ] && \
+    notify-send "Error" "Variable SCREENSHOT_DIRECTORY not set." && \
+    exit 1
+
+! command -v maim && \
+    notify-send "Error" "Executable \`maim\` not found." && \
+    exit 127
+
+mkdir -p "$SCREENSHOT_DIRECTORY"
+output="$SCREENSHOT_DIRECTORY/$(date +%s).png"
+
+case "$1" in
+selection)
+        maim -u -s --format png $output
+        ;;
+window)
+        maim -u -i $(xdotool getactivewindow) --format png \
+        $output
+        ;;
+all)
+        maim --format png $output
+        ;;
+*)
+        invalidopt $1
+        ;;
+esac
+
+xclip -selection clipboard -t image/png -i $output
