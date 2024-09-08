@@ -21,7 +21,7 @@ pass_entry=$(echo $entry | sed -e 's/.gpg$//')
 is_card=$(echo $entry | grep -c "credit-card")
 
 if [ $is_card -ne 0 ]; then
-        field="$(echo "Card number\nValid until\nCVV\n" | \
+        field="$(printf "Card number\nValid until\nCVV\n" | \
             dmenu -p "Copy which field?" -l 3)"
 
         case $field in
@@ -40,7 +40,7 @@ if [ $is_card -ne 0 ]; then
         esac
 
 else
-        field="$(echo "Password\nUsername\n" | \
+        field="$(printf "Password\nUsername\n" | \
             dmenu -p "Copy which field?" -l 2)"
 
         case $field in
